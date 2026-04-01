@@ -13,7 +13,6 @@
       --muted:#9fb0cf;
       --line:rgba(255,255,255,.08);
       --green:#21c47b;
-      --green2:#159a60;
       --blue:#4c8dff;
       --amber:#f3b43f;
       --red:#ef5d67;
@@ -399,15 +398,36 @@
       border-top-color:#28d889;
     }
 
-    .session-box{
-      display:grid;
-      gap:10px;
-    }
-
     .divider{
       height:1px;
       background:var(--line);
       margin:12px 0;
+    }
+
+    .photo-upload{
+      border:1px dashed var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#0f1728;
+    }
+
+    .photo-preview{
+      width:72px;
+      height:72px;
+      border-radius:50%;
+      background:#223150;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      font-weight:800;
+      color:#dce7ff;
+      margin-top:8px;
+    }
+
+    .photo-preview img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
     }
 
     @media (max-width:720px){
@@ -503,7 +523,7 @@
       <div class="card">
         <div style="font-weight:800;margin-bottom:8px;">Saved data</div>
         <div class="muted small">
-          This version saves your teams, players, and sessions in local browser storage on this device. :contentReference[oaicite:1]{index=1}
+          This version saves your teams, players, and sessions on this device in local storage.
         </div>
       </div>
     </section>
@@ -559,6 +579,14 @@
           <select id="p-team" class="select"></select>
         </div>
 
+        <div class="field full">
+          <label>Photo</label>
+          <div class="photo-upload">
+            <input id="p-photo-file" type="file" accept="image/*" class="input" style="padding:10px" onchange="handlePhotoSelect(event)">
+            <div class="photo-preview" id="p-photo-preview">IMG</div>
+          </div>
+        </div>
+
         <div class="field">
           <label>Readiness</label>
           <select id="p-ready" class="select">
@@ -570,8 +598,8 @@
         </div>
 
         <div class="field">
-          <label>Photo URL (optional)</label>
-          <input id="p-photo" class="input" placeholder="https://..." />
+          <label>Clear photo</label>
+          <button type="button" class="btn-secondary" onclick="clearPhotoDraft()">Remove current photo</button>
         </div>
 
         <div class="field full">
@@ -653,7 +681,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "coach_app_advanced_v1";
+    const STORAGE_KEY = "coach_app_advanced_v2";
     const ATTRS = ["Attack","Defense","Serve","Setting","Passing","Blocking"];
 
     const state = {
@@ -663,7 +691,8 @@
       ui: {
         currentScreen: "dashboard",
         editingPlayerId: null,
-        letterFilter: ""
+        letterFilter: "",
+        photoDraft: ""
       }
     };
 
@@ -732,10 +761,6 @@
 
     function teamName(teamId) {
       return state.teams.find(t => t.id === teamId)?.name || "No team";
-    }
-
-    function teamColor(teamId) {
-      return state.teams.find(t => t.id === teamId)?.color || "#4c8dff";
     }
 
     function watchPlayers() {
@@ -830,15 +855,9 @@
 
       let list = [...state.players];
 
-      if (q) {
-        list = list.filter(p => p.name.toLowerCase().includes(q));
-      }
-      if (teamFilter) {
-        list = list.filter(p => p.teamId === teamFilter);
-      }
-      if (letter) {
-        list = list.filter(p => p.name.toUpperCase().startsWith(letter));
-      }
+      if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
+      if (teamFilter) list = list.filter(p => p.teamId === teamFilter);
+      if (letter) list = list.filter(p => p.name.toUpperCase().startsWith(letter));
 
       list.sort((a,b) => a.name.localeCompare(b.name));
 
@@ -997,20 +1016,68 @@
       renderAttrEditor(window._attrDraft);
     }
 
+    function updatePhotoPreview(dataUrl="") {
+      const preview = document.getElementById("p-photo-preview");
+      preview.innerHTML = dataUrl ? `<img src="${dataUrl}" alt="">` : `IMG`;
+    }
+
+    function clearPhotoDraft() {
+      state.ui.photoDraft = "";
+      document.getElementById("p-photo-file").value = "";
+      updatePhotoPreview("");
+    }
+
+    function handlePhotoSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const maxSize = 400;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > h && w > maxSize) {
+            h = Math.round(h * (maxSize / w));
+            w = maxSize;
+          } else if (h >= w && h > maxSize) {
+            w = Math.round(w * (maxSize / h));
+            h = maxSize;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+          state.ui.photoDraft = dataUrl;
+          updatePhotoPreview(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
     function openPlayerEdit(id=null) {
       state.ui.editingPlayerId = id;
       buildPlayerTeamOptions();
+      document.getElementById("p-photo-file").value = "";
 
       if (!id) {
         document.getElementById("player-edit-title").textContent = "Add player";
         document.getElementById("p-name").value = "";
         document.getElementById("p-team").value = "";
         document.getElementById("p-ready").value = "fit";
-        document.getElementById("p-photo").value = "";
         document.getElementById("p-strengths").value = "";
         document.getElementById("p-weaknesses").value = "";
         document.getElementById("p-focus").value = "";
         document.getElementById("p-notes").value = "";
+        state.ui.photoDraft = "";
+        updatePhotoPreview("");
         renderAttrEditor(defaultAttrs());
       } else {
         const p = state.players.find(x => x.id === id);
@@ -1018,11 +1085,12 @@
         document.getElementById("p-name").value = p.name;
         buildPlayerTeamOptions(p.teamId || "");
         document.getElementById("p-ready").value = p.readiness || "fit";
-        document.getElementById("p-photo").value = p.photo || "";
         document.getElementById("p-strengths").value = p.strengths || "";
         document.getElementById("p-weaknesses").value = p.weaknesses || "";
         document.getElementById("p-focus").value = p.focus || "";
         document.getElementById("p-notes").value = p.notes || "";
+        state.ui.photoDraft = p.photo || "";
+        updatePhotoPreview(state.ui.photoDraft);
         renderAttrEditor(p.attributes || defaultAttrs());
       }
 
@@ -1034,7 +1102,7 @@
         name: document.getElementById("p-name").value.trim(),
         teamId: document.getElementById("p-team").value,
         readiness: document.getElementById("p-ready").value,
-        photo: document.getElementById("p-photo").value.trim(),
+        photo: state.ui.photoDraft || "",
         strengths: document.getElementById("p-strengths").value.trim(),
         weaknesses: document.getElementById("p-weaknesses").value.trim(),
         focus: document.getElementById("p-focus").value.trim(),
