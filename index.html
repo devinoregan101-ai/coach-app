@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Coach App</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root{
       --bg:#0b1220;
@@ -20,7 +22,6 @@
       --shadow:0 10px 30px rgba(0,0,0,.25);
       --radius:18px;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -29,56 +30,20 @@
       color:var(--text);
       min-height:100vh;
     }
-
-    .app{
-      max-width:980px;
-      margin:0 auto;
-      padding:18px 16px 96px;
-    }
-
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-
+    .app{max-width:980px;margin:0 auto;padding:18px 16px 96px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .brand{display:flex;gap:12px;align-items:center}
     .logo{
-      width:42px;
-      height:42px;
-      border-radius:14px;
+      width:42px;height:42px;border-radius:14px;
       background:linear-gradient(135deg,var(--green),#38e19a);
-      display:grid;
-      place-items:center;
-      font-size:20px;
-      box-shadow:var(--shadow);
+      display:grid;place-items:center;font-size:20px;box-shadow:var(--shadow)
     }
-
-    .title{
-      font-size:22px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-
-    .sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
-    }
-
+    .title{font-size:22px;font-weight:800;letter-spacing:.2px}
+    .sub{font-size:12px;color:var(--muted);margin-top:2px}
     .screen{display:none}
     .screen.active{display:block}
-
-    .grid{display:grid; gap:12px;}
-    .grid.cards{grid-template-columns:repeat(2,minmax(0,1fr));}
-
+    .grid{display:grid;gap:12px}
+    .grid.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
     .card{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border:1px solid var(--line);
@@ -86,398 +51,149 @@
       padding:14px;
       box-shadow:var(--shadow);
     }
-
     .clickable{cursor:pointer}
-
-    .stat{
-      font-size:30px;
-      font-weight:800;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .label{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .section-title{
-      font-size:18px;
-      font-weight:800;
-      margin:8px 0 12px;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:12px;
-    }
-
+    .stat{font-size:30px;font-weight:800;line-height:1;margin-bottom:6px}
+    .label{font-size:13px;color:var(--muted)}
+    .section-title{font-size:18px;font-weight:800;margin:8px 0 12px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
     button, select, input, textarea{font:inherit}
-
-    button{
-      border:none;
-      border-radius:12px;
-      padding:11px 14px;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .btn-primary{
-      background:linear-gradient(135deg,var(--green),#2bdb8f);
-      color:#08140f;
-    }
-
-    .btn-secondary{
-      background:#223150;
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-
-    .btn-danger{
-      background:rgba(239,93,103,.15);
-      color:#ffb2b7;
-      border:1px solid rgba(239,93,103,.25);
-    }
-
-    .btn-small{
-      padding:8px 10px;
-      border-radius:10px;
-      font-size:13px;
-    }
-
-    .row{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .between{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
+    button{border:none;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer}
+    .btn-primary{background:linear-gradient(135deg,var(--green),#2bdb8f);color:#08140f}
+    .btn-secondary{background:#223150;color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:rgba(239,93,103,.15);color:#ffb2b7;border:1px solid rgba(239,93,103,.25)}
+    .btn-small{padding:8px 10px;border-radius:10px;font-size:13px}
+    .row{display:flex;align-items:center;gap:10px}
+    .between{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .muted{color:var(--muted)}
     .small{font-size:12px}
-    .tiny{font-size:11px}
-
-    .list{
-      display:grid;
-      gap:10px;
-    }
-
-    .team-tile, .player-row, .session-row, .goal-row{
+    .list{display:grid;gap:10px}
+    .team-tile, .player-row, .session-row{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border:1px solid var(--line);
       border-radius:16px;
       padding:14px;
       box-shadow:var(--shadow);
     }
-
-    .team-color{
-      width:12px;
-      height:12px;
-      border-radius:999px;
-      flex:0 0 auto;
-    }
-
+    .team-color{width:12px;height:12px;border-radius:999px;flex:0 0 auto}
     .avatar{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      background:#223150;
-      display:grid;
-      place-items:center;
-      font-weight:800;
-      color:#dce7ff;
-      flex:0 0 auto;
-      overflow:hidden;
+      width:44px;height:44px;border-radius:50%;
+      background:#223150;display:grid;place-items:center;
+      font-weight:800;color:#dce7ff;flex:0 0 auto;overflow:hidden;
     }
-
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .chips{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      margin-top:8px;
-    }
-
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
     .chip{
-      background:var(--chip);
-      color:#d7e5ff;
-      padding:5px 9px;
-      border-radius:999px;
-      font-size:12px;
-      border:1px solid var(--line);
+      background:var(--chip);color:#d7e5ff;padding:5px 9px;
+      border-radius:999px;font-size:12px;border:1px solid var(--line)
     }
-
     .pill-fit{background:rgba(33,196,123,.14); color:#97f0c1}
     .pill-sore{background:rgba(243,180,63,.14); color:#ffd785}
     .pill-limited{background:rgba(76,141,255,.14); color:#aecdff}
     .pill-injured{background:rgba(239,93,103,.14); color:#ffb9be}
     .pill-overdue{background:rgba(239,93,103,.14); color:#ffb9be}
     .pill-ontrack{background:rgba(33,196,123,.14); color:#97f0c1}
-
-    .search{
+    .search,.input,.textarea,.select{
       width:100%;
-      background:#0f1728;
-      color:var(--text);
-      border:1px solid var(--line);
-      border-radius:12px;
+      background:#0f1728;color:var(--text);
+      border:1px solid var(--line);border-radius:12px;
       padding:12px 14px;
     }
-
-    .form-grid{
-      display:grid;
-      gap:10px;
-      grid-template-columns:1fr 1fr;
-    }
-
-    .field{
-      display:grid;
-      gap:6px;
-    }
-
+    .textarea{min-height:88px;resize:vertical}
+    .form-grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+    .field{display:grid;gap:6px}
     .field.full{grid-column:1 / -1}
-
-    .field label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    .input, .textarea, .select{
-      background:#0f1728;
-      color:var(--text);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 14px;
-      width:100%;
-    }
-
-    .textarea{
-      min-height:88px;
-      resize:vertical;
-    }
-
-    .attrs{
-      display:grid;
-      gap:10px;
-    }
-
-    .attr{
-      background:#0f1728;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-    }
-
-    .attr-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:8px;
-    }
-
-    .dots{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-
-    .dot{
-      width:18px;
-      height:18px;
-      border-radius:50%;
-      background:transparent;
-      border:2px solid #39527f;
-      cursor:pointer;
-    }
-
-    .dot.on{
-      background:var(--green);
-      border-color:var(--green);
-    }
-
+    .field label{font-size:12px;color:var(--muted);font-weight:700}
+    .attrs{display:grid;gap:10px}
+    .attr{background:#0f1728;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+    .attr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .dots{display:flex;gap:6px;flex-wrap:wrap}
+    .dot{width:18px;height:18px;border-radius:50%;background:transparent;border:2px solid #39527f;cursor:pointer}
+    .dot.on{background:var(--green);border-color:var(--green)}
     .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.56);
-      display:none;
-      align-items:flex-end;
-      justify-content:center;
-      padding:16px;
-      z-index:50;
+      position:fixed;inset:0;background:rgba(0,0,0,.56);
+      display:none;align-items:flex-end;justify-content:center;
+      padding:16px;z-index:50;
     }
-
     .modal.open{display:flex}
-
     .sheet{
-      width:min(720px,100%);
-      max-height:88vh;
-      overflow:auto;
+      width:min(720px,100%);max-height:88vh;overflow:auto;
       background:linear-gradient(180deg,#131d31,#0f1728);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:16px;
-      box-shadow:var(--shadow);
+      border:1px solid var(--line);border-radius:22px;
+      padding:16px;box-shadow:var(--shadow);
     }
-
-    .sheet-title{
-      font-size:19px;
-      font-weight:800;
-      margin-bottom:12px;
-    }
-
-    .a-z{
-      display:flex;
-      gap:6px;
-      overflow:auto;
-      padding-bottom:2px;
-      margin-bottom:12px;
-    }
-
+    .sheet-title{font-size:19px;font-weight:800;margin-bottom:12px}
+    .a-z{display:flex;gap:6px;overflow:auto;padding-bottom:2px;margin-bottom:12px}
     .a-z button{
-      min-width:34px;
-      padding:8px 0;
-      border-radius:10px;
-      background:#1a2740;
-      color:#cddcff;
-      border:1px solid var(--line);
+      min-width:34px;padding:8px 0;border-radius:10px;
+      background:#1a2740;color:#cddcff;border:1px solid var(--line);
     }
-
     .empty{
-      text-align:center;
-      padding:24px 14px;
-      color:var(--muted);
-      background:rgba(255,255,255,.03);
-      border:1px dashed var(--line);
+      text-align:center;padding:24px 14px;color:var(--muted);
+      background:rgba(255,255,255,.03);border:1px dashed var(--line);
       border-radius:16px;
     }
-
     .bottom-nav{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      background:rgba(10,16,28,.92);
-      backdrop-filter:blur(14px);
-      border-top:1px solid var(--line);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      z-index:40;
+      position:fixed;left:0;right:0;bottom:0;
+      background:rgba(10,16,28,.92);backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);display:grid;
+      grid-template-columns:repeat(5,1fr);z-index:40;
     }
-
     .nav-btn{
-      background:none;
-      color:#c6d6f6;
-      padding:12px 8px 14px;
-      border:none;
-      border-top:2px solid transparent;
-      border-radius:0;
-      font-size:12px;
-      font-weight:700;
+      background:none;color:#c6d6f6;padding:12px 8px 14px;border:none;
+      border-top:2px solid transparent;border-radius:0;font-size:12px;font-weight:700;
     }
-
-    .nav-btn.active{
-      color:#7ef0ba;
-      border-top-color:#28d889;
-    }
-
-    .divider{
-      height:1px;
-      background:var(--line);
-      margin:12px 0;
-    }
-
+    .nav-btn.active{color:#7ef0ba;border-top-color:#28d889}
+    .divider{height:1px;background:var(--line);margin:12px 0}
     .photo-upload{
-      border:1px dashed var(--line);
-      border-radius:14px;
-      padding:12px;
-      background:#0f1728;
+      border:1px dashed var(--line);border-radius:14px;
+      padding:12px;background:#0f1728;
     }
-
     .photo-preview{
-      width:72px;
-      height:72px;
-      border-radius:50%;
-      background:#223150;
-      display:grid;
-      place-items:center;
-      overflow:hidden;
-      font-weight:800;
-      color:#dce7ff;
-      margin-top:8px;
+      width:72px;height:72px;border-radius:50%;background:#223150;
+      display:grid;place-items:center;overflow:hidden;font-weight:800;
+      color:#dce7ff;margin-top:8px;
     }
-
-    .photo-preview img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .weather-summary{
-      display:grid;
-      gap:12px;
-    }
-
+    .photo-preview img{width:100%;height:100%;object-fit:cover}
+    .weather-summary{display:grid;gap:12px}
     .weather-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding:14px;
-      border-radius:16px;
-      background:linear-gradient(135deg,#1a2740,#23365c);
-      border:1px solid var(--line);
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px;border-radius:16px;
+      background:linear-gradient(135deg,#1a2740,#23365c);border:1px solid var(--line);
     }
-
-    .weather-days{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:10px;
-    }
-
-    .weather-day{
-      border-radius:16px;
-      padding:12px;
-      border:1px solid var(--line);
-    }
-
+    .weather-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .weather-day{border-radius:16px;padding:12px;border:1px solid var(--line)}
     .w-sun{background:linear-gradient(180deg,#4f3511,#2a1c0a)}
     .w-cloud{background:linear-gradient(180deg,#263346,#182130)}
     .w-rain{background:linear-gradient(180deg,#16314a,#101f30)}
     .w-wind{background:linear-gradient(180deg,#103840,#0d2529)}
     .w-storm{background:linear-gradient(180deg,#34203d,#1a1220)}
-
     .goal-card{
+      background:#0f1728;border:1px solid var(--line);
+      border-radius:14px;padding:10px 12px;
+    }
+    .goal-progress{height:8px;border-radius:999px;background:#1c2740;overflow:hidden;margin-top:8px}
+    .goal-fill{height:100%;background:linear-gradient(90deg,var(--green),#49e2a0)}
+    .import-zone{
+      border:1px dashed var(--line);
+      border-radius:16px;
+      padding:14px;
       background:#0f1728;
+    }
+    .name-preview{
+      max-height:220px;
+      overflow:auto;
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
+      border-radius:12px;
+      padding:10px;
+      background:#0c1322;
     }
-
-    .goal-progress{
-      height:8px;
-      border-radius:999px;
-      background:#1c2740;
-      overflow:hidden;
-      margin-top:8px;
+    .name-item{
+      padding:8px 10px;
+      border-radius:10px;
+      background:#152036;
+      margin-bottom:8px;
+      font-size:14px;
     }
-
-    .goal-fill{
-      height:100%;
-      background:linear-gradient(90deg,var(--green),#49e2a0);
-    }
-
     @media (max-width:720px){
       .grid.cards{grid-template-columns:1fr 1fr}
       .form-grid{grid-template-columns:1fr}
@@ -492,7 +208,7 @@
         <div class="logo">🏐</div>
         <div>
           <div class="title">Coach App</div>
-          <div class="sub">Goals + weather build</div>
+          <div class="sub">Roster import build</div>
         </div>
       </div>
       <button class="btn-secondary btn-small" onclick="resetApp()">Reset</button>
@@ -524,6 +240,7 @@
         <button class="btn-primary" onclick="openTeamModal()">+ Add Team</button>
         <button class="btn-primary" onclick="openPlayerEdit()">+ Add Player</button>
         <button class="btn-secondary" onclick="openSessionModal()">+ Add Session</button>
+        <button class="btn-secondary" onclick="openImportModal()">Import roster</button>
       </div>
 
       <div class="section-title">Next weather snapshot</div>
@@ -536,7 +253,10 @@
     <section id="screen-teams" class="screen">
       <div class="between">
         <div class="section-title">Teams</div>
-        <button class="btn-primary btn-small" onclick="openTeamModal()">+ Add Team</button>
+        <div class="toolbar">
+          <button class="btn-secondary btn-small" onclick="openImportModal()">Import roster</button>
+          <button class="btn-primary btn-small" onclick="openTeamModal()">+ Add Team</button>
+        </div>
       </div>
       <div id="teams-list" class="list"></div>
     </section>
@@ -544,7 +264,10 @@
     <section id="screen-players" class="screen">
       <div class="between">
         <div class="section-title">Players</div>
-        <button class="btn-primary btn-small" onclick="openPlayerEdit()">+ Add Player</button>
+        <div class="toolbar">
+          <button class="btn-secondary btn-small" onclick="openImportModal()">Import roster</button>
+          <button class="btn-primary btn-small" onclick="openPlayerEdit()">+ Add Player</button>
+        </div>
       </div>
 
       <div class="toolbar" style="display:grid;grid-template-columns:1fr 160px;">
@@ -572,7 +295,7 @@
       <div class="card">
         <div style="font-weight:800;margin-bottom:8px;">What’s next</div>
         <div class="muted small">
-          Next after this: roster import, then AI voice updates.
+          Next after this: AI voice updates.
         </div>
       </div>
     </section>
@@ -759,8 +482,56 @@
     </div>
   </div>
 
+  <div id="import-modal" class="modal">
+    <div class="sheet">
+      <div class="between">
+        <div class="sheet-title">Import roster</div>
+        <button class="btn-secondary btn-small" onclick="closeModal('import-modal')">Close</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Assign players to team</label>
+          <select id="import-team" class="select"></select>
+        </div>
+        <div class="field">
+          <label>Import type</label>
+          <select id="import-type" class="select" onchange="switchImportType()">
+            <option value="file">File (CSV/TXT/XLSX)</option>
+            <option value="image">Image / Screenshot</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="import-file-wrap" class="import-zone">
+        <div class="field">
+          <label>Choose file</label>
+          <input id="import-file" type="file" class="input" accept=".csv,.txt,.xlsx,.xls" />
+        </div>
+      </div>
+
+      <div id="import-image-wrap" class="import-zone" style="display:none">
+        <div class="field">
+          <label>Choose image</label>
+          <input id="import-image" type="file" class="input" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-top:12px">
+        <button class="btn-secondary" onclick="previewImport()">Preview names</button>
+      </div>
+
+      <div id="import-status" class="small muted"></div>
+      <div id="import-preview" class="name-preview" style="margin-top:12px"></div>
+
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn-primary" onclick="applyImport()">Import players</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const STORAGE_KEY = "coach_app_goals_weather_v1";
+    const STORAGE_KEY = "coach_app_roster_import_v1";
     const ATTRS = ["Attack","Defense","Serve","Setting","Passing","Blocking"];
     const FALLBACK_LOCATION = { name: "Copenhagen", lat: 55.6761, lon: 12.5683 };
 
@@ -774,7 +545,8 @@
         editingPlayerId: null,
         letterFilter: "",
         photoDraft: "",
-        goalDraft: []
+        goalDraft: [],
+        importPreview: []
       }
     };
 
@@ -810,6 +582,7 @@
       state.players = [];
       state.sessions = [];
       state.weather = null;
+      state.ui.importPreview = [];
       renderAll();
       loadWeather();
     }
@@ -1136,6 +909,12 @@
       sel.value = selected;
     }
 
+    function buildImportTeamOptions() {
+      const sel = document.getElementById("import-team");
+      sel.innerHTML = `<option value="">No team</option>` +
+        state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("");
+    }
+
     function openTeamModal() {
       document.getElementById("team-name").value = "";
       document.getElementById("team-color").value = "#21c47b";
@@ -1165,12 +944,8 @@
 
     function defaultAttrs() {
       return {
-        Attack: 0,
-        Defense: 0,
-        Serve: 0,
-        Setting: 0,
-        Passing: 0,
-        Blocking: 0
+        Attack: 0, Defense: 0, Serve: 0,
+        Setting: 0, Passing: 0, Blocking: 0
       };
     }
 
@@ -1185,9 +960,7 @@
           <div class="dots">
             ${[0,1,2,3,4,5].map(v => `
               <div class="dot ${(values[attr] || 0) >= v && v !== 0 ? "on" : ""}"
-                   onclick="setAttr('${attr}', ${v})"
-                   title="${v}">
-              </div>
+                   onclick="setAttr('${attr}', ${v})" title="${v}"></div>
             `).join("")}
           </div>
         </div>
@@ -1220,20 +993,12 @@
         const img = new Image();
         img.onload = function() {
           const maxSize = 400;
-          let w = img.width;
-          let h = img.height;
-
-          if (w > h && w > maxSize) {
-            h = Math.round(h * (maxSize / w));
-            w = maxSize;
-          } else if (h >= w && h > maxSize) {
-            w = Math.round(w * (maxSize / h));
-            h = maxSize;
-          }
+          let w = img.width, h = img.height;
+          if (w > h && w > maxSize) { h = Math.round(h * (maxSize / w)); w = maxSize; }
+          else if (h >= w && h > maxSize) { w = Math.round(w * (maxSize / h)); h = maxSize; }
 
           const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
+          canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
           const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
@@ -1280,14 +1045,7 @@
       if (!skill) return alert("Enter a goal skill or area.");
       if (target < current) return alert("Target should be equal to or higher than current.");
 
-      state.ui.goalDraft.push({
-        id: uid(),
-        skill,
-        deadline,
-        current,
-        target,
-        notes
-      });
+      state.ui.goalDraft.push({ id: uid(), skill, deadline, current, target, notes });
 
       document.getElementById("g-skill").value = "";
       document.getElementById("g-deadline").value = "";
@@ -1526,10 +1284,7 @@
               label: formatDay(dateStr, i),
               icon: weatherIcon(code, wind, rain),
               text: weatherText(code, wind, rain),
-              max,
-              min,
-              wind,
-              rain,
+              max, min, wind, rain,
               coaching: coachingSuggestion(code, wind, rain),
               style: weatherStyle(code, wind, rain)
             };
@@ -1560,6 +1315,140 @@
       const d = new Date(dateStr);
       if (idx === 0) return "Today";
       return d.toLocaleDateString(undefined, { weekday: "short" });
+    }
+
+    function cleanImportedNames(rawNames) {
+      const junk = new Set(["name","names","player","players","team","roster","attendance"]);
+      const seen = new Set();
+      const out = [];
+
+      for (let name of rawNames) {
+        if (!name) continue;
+        name = String(name).replace(/\s+/g, " ").trim();
+        name = name.replace(/^[\d\-\.\)\(]+\s*/, "").trim();
+        name = name.replace(/[|•]+/g, " ").trim();
+        if (!name) continue;
+        if (name.length < 2) continue;
+        if (junk.has(name.toLowerCase())) continue;
+        if (!/[a-zA-ZÀ-ÿ]/.test(name)) continue;
+
+        const key = name.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push(name);
+        }
+      }
+
+      return out;
+    }
+
+    function openImportModal() {
+      buildImportTeamOptions();
+      document.getElementById("import-type").value = "file";
+      document.getElementById("import-file").value = "";
+      document.getElementById("import-image").value = "";
+      document.getElementById("import-status").textContent = "";
+      document.getElementById("import-preview").innerHTML = "";
+      state.ui.importPreview = [];
+      switchImportType();
+      openModal("import-modal");
+    }
+
+    function switchImportType() {
+      const type = document.getElementById("import-type").value;
+      document.getElementById("import-file-wrap").style.display = type === "file" ? "block" : "none";
+      document.getElementById("import-image-wrap").style.display = type === "image" ? "block" : "none";
+    }
+
+    async function previewImport() {
+      const type = document.getElementById("import-type").value;
+      document.getElementById("import-status").textContent = "Reading names...";
+      document.getElementById("import-preview").innerHTML = "";
+      state.ui.importPreview = [];
+
+      try {
+        let names = [];
+        if (type === "file") {
+          const file = document.getElementById("import-file").files[0];
+          if (!file) return alert("Choose a file first.");
+
+          const ext = file.name.split(".").pop().toLowerCase();
+
+          if (ext === "csv" || ext === "txt") {
+            const text = await file.text();
+            names = text
+              .split(/\r?\n|,/)
+              .map(x => x.trim())
+              .filter(Boolean);
+          } else if (ext === "xlsx" || ext === "xls") {
+            const buffer = await file.arrayBuffer();
+            const wb = XLSX.read(buffer, { type: "array" });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            names = rows.flat().map(x => String(x || "").trim()).filter(Boolean);
+          } else {
+            return alert("Use CSV, TXT, XLSX, or XLS.");
+          }
+        } else {
+          const file = document.getElementById("import-image").files[0];
+          if (!file) return alert("Choose an image first.");
+
+          const result = await Tesseract.recognize(file, "eng");
+          const text = result.data.text || "";
+          names = text
+            .split(/\r?\n/)
+            .map(x => x.trim())
+            .filter(Boolean);
+        }
+
+        names = cleanImportedNames(names);
+        state.ui.importPreview = names;
+
+        document.getElementById("import-status").textContent =
+          names.length ? `Found ${names.length} names.` : "No names found.";
+
+        document.getElementById("import-preview").innerHTML = names.length
+          ? names.map(n => `<div class="name-item">${n}</div>`).join("")
+          : `<div class="empty">No names found.</div>`;
+      } catch (e) {
+        document.getElementById("import-status").textContent = "Could not read import.";
+      }
+    }
+
+    function applyImport() {
+      const teamId = document.getElementById("import-team").value;
+      const names = state.ui.importPreview || [];
+      if (!names.length) return alert("Preview names first.");
+
+      let added = 0;
+
+      for (const name of names) {
+        const exists = state.players.some(
+          p => p.name.toLowerCase() === name.toLowerCase() && (p.teamId || "") === (teamId || "")
+        );
+        if (exists) continue;
+
+        state.players.push({
+          id: uid(),
+          name,
+          teamId: teamId || "",
+          readiness: "fit",
+          photo: "",
+          strengths: "",
+          weaknesses: "",
+          focus: "",
+          notes: "",
+          attributes: defaultAttrs(),
+          goals: []
+        });
+        added++;
+      }
+
+      saveState();
+      closeModal("import-modal");
+      renderAll();
+      go("players");
+      alert(`Imported ${added} player${added === 1 ? "" : "s"}.`);
     }
 
     loadState();
