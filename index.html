@@ -76,14 +76,8 @@
     .screen{display:none}
     .screen.active{display:block}
 
-    .grid{
-      display:grid;
-      gap:12px;
-    }
-
-    .grid.cards{
-      grid-template-columns:repeat(2,minmax(0,1fr));
-    }
+    .grid{display:grid; gap:12px;}
+    .grid.cards{grid-template-columns:repeat(2,minmax(0,1fr));}
 
     .card{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
@@ -120,9 +114,7 @@
       margin-bottom:12px;
     }
 
-    button, select, input, textarea{
-      font:inherit;
-    }
+    button, select, input, textarea{font:inherit}
 
     button{
       border:none;
@@ -177,7 +169,7 @@
       gap:10px;
     }
 
-    .team-tile, .player-row, .session-row{
+    .team-tile, .player-row, .session-row, .goal-row{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border:1px solid var(--line);
       border-radius:16px;
@@ -231,6 +223,8 @@
     .pill-sore{background:rgba(243,180,63,.14); color:#ffd785}
     .pill-limited{background:rgba(76,141,255,.14); color:#aecdff}
     .pill-injured{background:rgba(239,93,103,.14); color:#ffb9be}
+    .pill-overdue{background:rgba(239,93,103,.14); color:#ffb9be}
+    .pill-ontrack{background:rgba(33,196,123,.14); color:#97f0c1}
 
     .search{
       width:100%;
@@ -430,9 +424,64 @@
       object-fit:cover;
     }
 
+    .weather-summary{
+      display:grid;
+      gap:12px;
+    }
+
+    .weather-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:14px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#1a2740,#23365c);
+      border:1px solid var(--line);
+    }
+
+    .weather-days{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .weather-day{
+      border-radius:16px;
+      padding:12px;
+      border:1px solid var(--line);
+    }
+
+    .w-sun{background:linear-gradient(180deg,#4f3511,#2a1c0a)}
+    .w-cloud{background:linear-gradient(180deg,#263346,#182130)}
+    .w-rain{background:linear-gradient(180deg,#16314a,#101f30)}
+    .w-wind{background:linear-gradient(180deg,#103840,#0d2529)}
+    .w-storm{background:linear-gradient(180deg,#34203d,#1a1220)}
+
+    .goal-card{
+      background:#0f1728;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+
+    .goal-progress{
+      height:8px;
+      border-radius:999px;
+      background:#1c2740;
+      overflow:hidden;
+      margin-top:8px;
+    }
+
+    .goal-fill{
+      height:100%;
+      background:linear-gradient(90deg,var(--green),#49e2a0);
+    }
+
     @media (max-width:720px){
       .grid.cards{grid-template-columns:1fr 1fr}
       .form-grid{grid-template-columns:1fr}
+      .weather-days{grid-template-columns:1fr 1fr}
     }
   </style>
 </head>
@@ -443,7 +492,7 @@
         <div class="logo">🏐</div>
         <div>
           <div class="title">Coach App</div>
-          <div class="sub">Advanced coaching version</div>
+          <div class="sub">Goals + weather build</div>
         </div>
       </div>
       <button class="btn-secondary btn-small" onclick="resetApp()">Reset</button>
@@ -476,6 +525,9 @@
         <button class="btn-primary" onclick="openPlayerEdit()">+ Add Player</button>
         <button class="btn-secondary" onclick="openSessionModal()">+ Add Session</button>
       </div>
+
+      <div class="section-title">Next weather snapshot</div>
+      <div id="dashboard-weather"></div>
 
       <div class="section-title">Player watchlist</div>
       <div id="watchlist" class="list"></div>
@@ -513,17 +565,14 @@
     </section>
 
     <section id="screen-more" class="screen">
+      <div class="section-title">Weather</div>
+      <div id="weather-wrap"></div>
+
       <div class="section-title">More</div>
       <div class="card">
         <div style="font-weight:800;margin-bottom:8px;">What’s next</div>
         <div class="muted small">
-          Next step after this: player goals, timeline, roster import, weather cards, and AI voice updates.
-        </div>
-      </div>
-      <div class="card">
-        <div style="font-weight:800;margin-bottom:8px;">Saved data</div>
-        <div class="muted small">
-          This version saves your teams, players, and sessions on this device in local storage.
+          Next after this: roster import, then AI voice updates.
         </div>
       </div>
     </section>
@@ -627,6 +676,35 @@
       <div class="sheet-title" style="font-size:16px;">Attributes (0–5)</div>
       <div id="attrs-wrap" class="attrs"></div>
 
+      <div class="divider"></div>
+      <div class="sheet-title" style="font-size:16px;">Goals</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Goal skill / area</label>
+          <input id="g-skill" class="input" placeholder="Serve receive" />
+        </div>
+        <div class="field">
+          <label>Deadline</label>
+          <input id="g-deadline" class="input" type="date" />
+        </div>
+        <div class="field">
+          <label>Current (0–5)</label>
+          <input id="g-current" class="input" type="number" min="0" max="5" value="2" />
+        </div>
+        <div class="field">
+          <label>Target (0–5)</label>
+          <input id="g-target" class="input" type="number" min="0" max="5" value="4" />
+        </div>
+        <div class="field full">
+          <label>Goal notes</label>
+          <textarea id="g-notes" class="textarea" placeholder="What needs to improve..."></textarea>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn-secondary btn-small" onclick="addGoalDraft()">+ Add goal</button>
+      </div>
+      <div id="goal-draft-list" class="list"></div>
+
       <div class="toolbar" style="margin-top:14px;">
         <button class="btn-primary" onclick="savePlayer()">Save player</button>
       </div>
@@ -681,18 +759,21 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "coach_app_advanced_v2";
+    const STORAGE_KEY = "coach_app_goals_weather_v1";
     const ATTRS = ["Attack","Defense","Serve","Setting","Passing","Blocking"];
+    const FALLBACK_LOCATION = { name: "Copenhagen", lat: 55.6761, lon: 12.5683 };
 
     const state = {
       teams: [],
       players: [],
       sessions: [],
+      weather: null,
       ui: {
         currentScreen: "dashboard",
         editingPlayerId: null,
         letterFilter: "",
-        photoDraft: ""
+        photoDraft: "",
+        goalDraft: []
       }
     };
 
@@ -727,7 +808,9 @@
       state.teams = [];
       state.players = [];
       state.sessions = [];
+      state.weather = null;
       renderAll();
+      loadWeather();
     }
 
     function initials(name="") {
@@ -763,17 +846,23 @@
       return state.teams.find(t => t.id === teamId)?.name || "No team";
     }
 
-    function watchPlayers() {
-      return state.players.filter(p =>
-        p.readiness !== "fit" ||
-        averageAttr(p) <= 2.5
-      );
-    }
-
     function averageAttr(player) {
       const vals = ATTRS.map(a => Number(player.attributes?.[a] || 0));
       const total = vals.reduce((a,b)=>a+b,0);
       return vals.length ? total / vals.length : 0;
+    }
+
+    function isGoalOverdue(goal) {
+      return !!goal.deadline && new Date(goal.deadline) < new Date(new Date().toISOString().split("T")[0]) && Number(goal.current) < Number(goal.target);
+    }
+
+    function watchPlayers() {
+      return state.players.filter(p => {
+        const lowAvg = averageAttr(p) <= 2.5;
+        const notFit = p.readiness !== "fit";
+        const overdueGoal = (p.goals || []).some(isGoalOverdue);
+        return lowAvg || notFit || overdueGoal;
+      });
     }
 
     function renderDashboard() {
@@ -781,6 +870,29 @@
       document.getElementById("stat-players").textContent = state.players.length;
       document.getElementById("stat-sessions").textContent = state.sessions.length;
       document.getElementById("stat-watch").textContent = watchPlayers().length;
+
+      const dashWeather = document.getElementById("dashboard-weather");
+      if (!state.weather) {
+        dashWeather.innerHTML = `<div class="card small muted">Loading weather...</div>`;
+      } else {
+        const d0 = state.weather.days[0];
+        dashWeather.innerHTML = `
+          <div class="card">
+            <div class="between">
+              <div>
+                <div style="font-weight:800">${state.weather.locationName}</div>
+                <div class="small muted">${d0.label} · ${d0.icon} ${d0.text}</div>
+              </div>
+              <div style="font-size:22px;font-weight:900">${d0.max}°</div>
+            </div>
+            <div class="chips">
+              <span class="chip">Wind ${d0.wind} km/h</span>
+              <span class="chip">Rain ${d0.rain}%</span>
+            </div>
+            <div class="small muted" style="margin-top:10px">${d0.coaching}</div>
+          </div>
+        `;
+      }
 
       const watch = document.getElementById("watchlist");
       const list = watchPlayers();
@@ -803,6 +915,7 @@
           </div>
           <div class="chips">
             <span class="chip">Avg ${averageAttr(p).toFixed(1)}/5</span>
+            ${(p.goals || []).some(isGoalOverdue) ? `<span class="chip pill-overdue">Goal overdue</span>` : ``}
           </div>
         </div>
       `).join("");
@@ -854,11 +967,9 @@
       const letter = state.ui.letterFilter;
 
       let list = [...state.players];
-
       if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
       if (teamFilter) list = list.filter(p => p.teamId === teamFilter);
       if (letter) list = list.filter(p => p.name.toUpperCase().startsWith(letter));
-
       list.sort((a,b) => a.name.localeCompare(b.name));
 
       const el = document.getElementById("players-list");
@@ -887,6 +998,7 @@
             <span class="chip">Se ${p.attributes.Setting}</span>
             <span class="chip">P ${p.attributes.Passing}</span>
             <span class="chip">B ${p.attributes.Blocking}</span>
+            ${(p.goals || []).length ? `<span class="chip">${p.goals.length} goal${p.goals.length>1?'s':''}</span>` : ``}
           </div>
 
           <div class="toolbar" style="margin-top:10px">
@@ -921,11 +1033,88 @@
       `).join("");
     }
 
+    function weatherStyle(code, wind, rain) {
+      if (code >= 95) return "w-storm";
+      if (rain >= 50 || code >= 61) return "w-rain";
+      if (wind >= 25) return "w-wind";
+      if (code >= 2) return "w-cloud";
+      return "w-sun";
+    }
+
+    function weatherIcon(code, wind, rain) {
+      if (code >= 95) return "⛈️";
+      if (rain >= 50 || code >= 61) return "🌧️";
+      if (wind >= 25) return "🌬️";
+      if (code >= 2) return "☁️";
+      return "☀️";
+    }
+
+    function weatherText(code, wind, rain) {
+      if (code >= 95) return "Storm risk";
+      if (rain >= 50 || code >= 61) return "Rainy";
+      if (wind >= 25) return "Windy";
+      if (code >= 2) return "Cloudy";
+      return "Sunny";
+    }
+
+    function coachingSuggestion(code, wind, rain) {
+      if (code >= 95) return "Move indoors if possible.";
+      if (rain >= 50 || code >= 61) return "Good for short ball-control work, but indoor backup is smart.";
+      if (wind >= 30) return "Use this for ball control, reading flight, and defence. Avoid heavy serve work.";
+      if (wind >= 20) return "Fine for technique and sideout reps. Be careful with toss-dependent serving.";
+      if (code <= 1) return "Great beach conditions. Good day for serving, attack timing, and game play.";
+      return "Usable conditions. Focus on technical reps and controlled drills.";
+    }
+
+    function formatDay(dateStr, idx) {
+      const d = new Date(dateStr);
+      if (idx === 0) return "Today";
+      return d.toLocaleDateString(undefined, { weekday: "short" });
+    }
+
+    function renderWeather() {
+      const wrap = document.getElementById("weather-wrap");
+      if (!state.weather) {
+        wrap.innerHTML = `<div class="card small muted">Loading weather...</div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <div class="weather-summary">
+          <div class="weather-top">
+            <div>
+              <div style="font-size:22px;font-weight:900">${state.weather.locationName}</div>
+              <div class="small muted">Beach coaching forecast</div>
+            </div>
+            <button class="btn-secondary btn-small" onclick="loadWeather()">Refresh</button>
+          </div>
+          <div class="weather-days">
+            ${state.weather.days.map(d => `
+              <div class="weather-day ${d.style}">
+                <div class="between">
+                  <div style="font-weight:800">${d.label}</div>
+                  <div style="font-size:22px">${d.icon}</div>
+                </div>
+                <div class="small muted" style="margin-top:4px">${d.text}</div>
+                <div style="font-size:20px;font-weight:900;margin-top:8px">${d.max}° / ${d.min}°</div>
+                <div class="chips">
+                  <span class="chip">💨 ${d.wind} km/h</span>
+                  <span class="chip">🌧️ ${d.rain}%</span>
+                </div>
+                <div class="small" style="margin-top:10px">${d.coaching}</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
     function renderAll() {
       renderDashboard();
       renderTeams();
       renderPlayers();
       renderSessions();
+      renderWeather();
       buildTeamFilters();
       buildAzBar();
     }
@@ -1052,7 +1241,6 @@
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-
           const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
           state.ui.photoDraft = dataUrl;
           updatePhotoPreview(dataUrl);
@@ -1060,6 +1248,63 @@
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    function renderGoalDrafts() {
+      const el = document.getElementById("goal-draft-list");
+      if (!state.ui.goalDraft.length) {
+        el.innerHTML = `<div class="empty">No goals added yet.</div>`;
+        return;
+      }
+
+      el.innerHTML = state.ui.goalDraft.map((g, i) => {
+        const pct = Math.max(0, Math.min(100, (Number(g.current) / Math.max(1, Number(g.target))) * 100));
+        return `
+          <div class="goal-card">
+            <div class="between">
+              <div>
+                <div style="font-weight:800">${g.skill}</div>
+                <div class="small muted">${g.current}/${g.target}${g.deadline ? ` · by ${g.deadline}` : ""}</div>
+              </div>
+              <button class="btn-danger btn-small" onclick="removeGoalDraft(${i})">Remove</button>
+            </div>
+            ${g.notes ? `<div class="small muted" style="margin-top:8px">${g.notes}</div>` : ""}
+            <div class="goal-progress"><div class="goal-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function addGoalDraft() {
+      const skill = document.getElementById("g-skill").value.trim();
+      const deadline = document.getElementById("g-deadline").value;
+      const current = Number(document.getElementById("g-current").value || 0);
+      const target = Number(document.getElementById("g-target").value || 0);
+      const notes = document.getElementById("g-notes").value.trim();
+
+      if (!skill) return alert("Enter a goal skill or area.");
+      if (target < current) return alert("Target should be equal to or higher than current.");
+
+      state.ui.goalDraft.push({
+        id: uid(),
+        skill,
+        deadline,
+        current,
+        target,
+        notes
+      });
+
+      document.getElementById("g-skill").value = "";
+      document.getElementById("g-deadline").value = "";
+      document.getElementById("g-current").value = 2;
+      document.getElementById("g-target").value = 4;
+      document.getElementById("g-notes").value = "";
+      renderGoalDrafts();
+    }
+
+    function removeGoalDraft(i) {
+      state.ui.goalDraft.splice(i, 1);
+      renderGoalDrafts();
     }
 
     function openPlayerEdit(id=null) {
@@ -1076,9 +1321,16 @@
         document.getElementById("p-weaknesses").value = "";
         document.getElementById("p-focus").value = "";
         document.getElementById("p-notes").value = "";
+        document.getElementById("g-skill").value = "";
+        document.getElementById("g-deadline").value = "";
+        document.getElementById("g-current").value = 2;
+        document.getElementById("g-target").value = 4;
+        document.getElementById("g-notes").value = "";
         state.ui.photoDraft = "";
+        state.ui.goalDraft = [];
         updatePhotoPreview("");
         renderAttrEditor(defaultAttrs());
+        renderGoalDrafts();
       } else {
         const p = state.players.find(x => x.id === id);
         document.getElementById("player-edit-title").textContent = "Edit player";
@@ -1089,9 +1341,16 @@
         document.getElementById("p-weaknesses").value = p.weaknesses || "";
         document.getElementById("p-focus").value = p.focus || "";
         document.getElementById("p-notes").value = p.notes || "";
+        document.getElementById("g-skill").value = "";
+        document.getElementById("g-deadline").value = "";
+        document.getElementById("g-current").value = 2;
+        document.getElementById("g-target").value = 4;
+        document.getElementById("g-notes").value = "";
         state.ui.photoDraft = p.photo || "";
+        state.ui.goalDraft = JSON.parse(JSON.stringify(p.goals || []));
         updatePhotoPreview(state.ui.photoDraft);
         renderAttrEditor(p.attributes || defaultAttrs());
+        renderGoalDrafts();
       }
 
       openModal("player-edit-modal");
@@ -1107,7 +1366,8 @@
         weaknesses: document.getElementById("p-weaknesses").value.trim(),
         focus: document.getElementById("p-focus").value.trim(),
         notes: document.getElementById("p-notes").value.trim(),
-        attributes: { ...(window._attrDraft || defaultAttrs()) }
+        attributes: { ...(window._attrDraft || defaultAttrs()) },
+        goals: JSON.parse(JSON.stringify(state.ui.goalDraft || []))
       };
 
       if (!payload.name) return alert("Enter a player name.");
@@ -1116,10 +1376,7 @@
         const i = state.players.findIndex(x => x.id === state.ui.editingPlayerId);
         state.players[i] = { ...state.players[i], ...payload };
       } else {
-        state.players.push({
-          id: uid(),
-          ...payload
-        });
+        state.players.push({ id: uid(), ...payload });
       }
 
       saveState();
@@ -1187,6 +1444,29 @@
             <div class="muted small">${p.focus}</div>
           ` : ""}
 
+          ${(p.goals || []).length ? `
+            <div class="divider"></div>
+            <div style="font-weight:800;margin-bottom:8px">Goals</div>
+            <div class="list">
+              ${(p.goals || []).map(g => {
+                const pct = Math.max(0, Math.min(100, (Number(g.current) / Math.max(1, Number(g.target))) * 100));
+                return `
+                  <div class="goal-card">
+                    <div class="between">
+                      <div>
+                        <div style="font-weight:800">${g.skill}</div>
+                        <div class="small muted">${g.current}/${g.target}${g.deadline ? ` · by ${g.deadline}` : ""}</div>
+                      </div>
+                      <span class="chip ${isGoalOverdue(g) ? "pill-overdue" : "pill-ontrack"}">${isGoalOverdue(g) ? "Overdue" : "On track"}</span>
+                    </div>
+                    ${g.notes ? `<div class="small muted" style="margin-top:8px">${g.notes}</div>` : ""}
+                    <div class="goal-progress"><div class="goal-fill" style="width:${pct}%"></div></div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          ` : ""}
+
           ${p.notes ? `
             <div class="divider"></div>
             <div style="font-weight:800;margin-bottom:6px">Coach notes</div>
@@ -1234,8 +1514,62 @@
       renderAll();
     }
 
+    async function loadWeather() {
+      const useCoords = async (lat, lon, locationName) => {
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_probability_max&timezone=auto&forecast_days=5`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          const days = data.daily.time.map((dateStr, i) => {
+            const code = data.daily.weathercode[i];
+            const max = Math.round(data.daily.temperature_2m_max[i]);
+            const min = Math.round(data.daily.temperature_2m_min[i]);
+            const wind = Math.round(data.daily.windspeed_10m_max[i]);
+            const rain = Math.round(data.daily.precipitation_probability_max[i] || 0);
+            return {
+              label: formatDay(dateStr, i),
+              icon: weatherIcon(code, wind, rain),
+              text: weatherText(code, wind, rain),
+              max,
+              min,
+              wind,
+              rain,
+              coaching: coachingSuggestion(code, wind, rain),
+              style: weatherStyle(code, wind, rain)
+            };
+          });
+
+          state.weather = { locationName, days };
+          renderWeather();
+          renderDashboard();
+        } catch (e) {
+          document.getElementById("weather-wrap").innerHTML = `<div class="card small muted">Could not load weather.</div>`;
+          document.getElementById("dashboard-weather").innerHTML = `<div class="card small muted">Could not load weather.</div>`;
+        }
+      };
+
+      const isSecure = window.isSecureContext;
+      if (isSecure && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => useCoords(pos.coords.latitude, pos.coords.longitude, "Your location"),
+          () => useCoords(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lon, FALLBACK_LOCATION.name),
+          { enableHighAccuracy: false, timeout: 7000, maximumAge: 300000 }
+        );
+      } else {
+        useCoords(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lon, FALLBACK_LOCATION.name);
+      }
+    }
+
+    function formatDay(dateStr, idx) {
+      const d = new Date(dateStr);
+      if (idx === 0) return "Today";
+      return d.toLocaleDateString(undefined, { weekday: "short" });
+    }
+
     loadState();
     renderAll();
+    loadWeather();
   </script>
 </body>
 </html>
