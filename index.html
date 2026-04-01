@@ -1,142 +1,1173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coach App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach App</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#121a2b;
+      --panel2:#182338;
+      --text:#eef4ff;
+      --muted:#9fb0cf;
+      --line:rgba(255,255,255,.08);
+      --green:#21c47b;
+      --green2:#159a60;
+      --blue:#4c8dff;
+      --amber:#f3b43f;
+      --red:#ef5d67;
+      --chip:#223150;
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --radius:18px;
+    }
 
-<style>
-body {
-  font-family: -apple-system, sans-serif;
-  margin:0;
-  background:#0f172a;
-  color:white;
-}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:linear-gradient(180deg,#0a1120 0%, #0d1526 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
 
-h2 { padding:15px; }
+    .app{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 96px;
+    }
 
-.nav {
-  position:fixed;
-  bottom:0;
-  width:100%;
-  display:flex;
-  justify-content:space-around;
-  background:#1e293b;
-  padding:10px;
-}
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
 
-.tab { cursor:pointer; }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
 
-.card {
-  background:#1e293b;
-  padding:15px;
-  margin:10px;
-  border-radius:12px;
-}
+    .logo{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--green),#38e19a);
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      box-shadow:var(--shadow);
+    }
 
-button {
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  background:#22c55e;
-  color:white;
-  font-weight:bold;
-}
+    .title{
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
 
-input {
-  padding:10px;
-  width:100%;
-  margin-top:10px;
-  border-radius:8px;
-  border:none;
-}
-</style>
+    .sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
 
+    .screen{display:none}
+    .screen.active{display:block}
+
+    .grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .grid.cards{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .card{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+
+    .clickable{cursor:pointer}
+
+    .stat{
+      font-size:30px;
+      font-weight:800;
+      line-height:1;
+      margin-bottom:6px;
+    }
+
+    .label{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .section-title{
+      font-size:18px;
+      font-weight:800;
+      margin:8px 0 12px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    button, select, input, textarea{
+      font:inherit;
+    }
+
+    button{
+      border:none;
+      border-radius:12px;
+      padding:11px 14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--green),#2bdb8f);
+      color:#08140f;
+    }
+
+    .btn-secondary{
+      background:#223150;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn-danger{
+      background:rgba(239,93,103,.15);
+      color:#ffb2b7;
+      border:1px solid rgba(239,93,103,.25);
+    }
+
+    .btn-small{
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:13px;
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .between{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .tiny{font-size:11px}
+
+    .list{
+      display:grid;
+      gap:10px;
+    }
+
+    .team-tile, .player-row, .session-row{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+
+    .team-color{
+      width:12px;
+      height:12px;
+      border-radius:999px;
+      flex:0 0 auto;
+    }
+
+    .avatar{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      background:#223150;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:#dce7ff;
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .chips{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .chip{
+      background:var(--chip);
+      color:#d7e5ff;
+      padding:5px 9px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--line);
+    }
+
+    .pill-fit{background:rgba(33,196,123,.14); color:#97f0c1}
+    .pill-sore{background:rgba(243,180,63,.14); color:#ffd785}
+    .pill-limited{background:rgba(76,141,255,.14); color:#aecdff}
+    .pill-injured{background:rgba(239,93,103,.14); color:#ffb9be}
+
+    .search{
+      width:100%;
+      background:#0f1728;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr 1fr;
+    }
+
+    .field{
+      display:grid;
+      gap:6px;
+    }
+
+    .field.full{grid-column:1 / -1}
+
+    .field label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .input, .textarea, .select{
+      background:#0f1728;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      width:100%;
+    }
+
+    .textarea{
+      min-height:88px;
+      resize:vertical;
+    }
+
+    .attrs{
+      display:grid;
+      gap:10px;
+    }
+
+    .attr{
+      background:#0f1728;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+
+    .attr-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+    }
+
+    .dots{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .dot{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:transparent;
+      border:2px solid #39527f;
+      cursor:pointer;
+    }
+
+    .dot.on{
+      background:var(--green);
+      border-color:var(--green);
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.56);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
+    }
+
+    .modal.open{display:flex}
+
+    .sheet{
+      width:min(720px,100%);
+      max-height:88vh;
+      overflow:auto;
+      background:linear-gradient(180deg,#131d31,#0f1728);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .sheet-title{
+      font-size:19px;
+      font-weight:800;
+      margin-bottom:12px;
+    }
+
+    .a-z{
+      display:flex;
+      gap:6px;
+      overflow:auto;
+      padding-bottom:2px;
+      margin-bottom:12px;
+    }
+
+    .a-z button{
+      min-width:34px;
+      padding:8px 0;
+      border-radius:10px;
+      background:#1a2740;
+      color:#cddcff;
+      border:1px solid var(--line);
+    }
+
+    .empty{
+      text-align:center;
+      padding:24px 14px;
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+      border:1px dashed var(--line);
+      border-radius:16px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(10,16,28,.92);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      z-index:40;
+    }
+
+    .nav-btn{
+      background:none;
+      color:#c6d6f6;
+      padding:12px 8px 14px;
+      border:none;
+      border-top:2px solid transparent;
+      border-radius:0;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .nav-btn.active{
+      color:#7ef0ba;
+      border-top-color:#28d889;
+    }
+
+    .session-box{
+      display:grid;
+      gap:10px;
+    }
+
+    .divider{
+      height:1px;
+      background:var(--line);
+      margin:12px 0;
+    }
+
+    @media (max-width:720px){
+      .grid.cards{grid-template-columns:1fr 1fr}
+      .form-grid{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
+  <div class="app">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">🏐</div>
+        <div>
+          <div class="title">Coach App</div>
+          <div class="sub">Advanced coaching version</div>
+        </div>
+      </div>
+      <button class="btn-secondary btn-small" onclick="resetApp()">Reset</button>
+    </div>
 
-<h2>🏐 Coach Dashboard</h2>
-
-<div id="content"></div>
-
-<div class="nav">
-  <div class="tab" onclick="show('teams')">Teams</div>
-  <div class="tab" onclick="show('players')">Players</div>
-  <div class="tab" onclick="show('sessions')">Sessions</div>
-  <div class="tab" onclick="show('more')">More</div>
-</div>
-
-<script>
-let players = []
-
-function show(tab){
-  let el = document.getElementById("content")
-
-  if(tab==="players"){
-    el.innerHTML = `
-      <div class="card">
-        <button onclick="addPlayer()">+ Add Player</button>
+    <section id="screen-dashboard" class="screen active">
+      <div class="section-title">Dashboard</div>
+      <div class="grid cards">
+        <div class="card clickable" onclick="go('teams')">
+          <div class="stat" id="stat-teams">0</div>
+          <div class="label">Teams</div>
+        </div>
+        <div class="card clickable" onclick="go('players')">
+          <div class="stat" id="stat-players">0</div>
+          <div class="label">Players</div>
+        </div>
+        <div class="card clickable" onclick="go('sessions')">
+          <div class="stat" id="stat-sessions">0</div>
+          <div class="label">Sessions</div>
+        </div>
+        <div class="card clickable" onclick="go('more')">
+          <div class="stat" id="stat-watch">0</div>
+          <div class="label">Need attention</div>
+        </div>
       </div>
 
-      ${players.map((p,i)=>`
-        <div class="card">
-          <b>${p.name}</b><br><br>
+      <div class="section-title" style="margin-top:18px;">Quick actions</div>
+      <div class="toolbar">
+        <button class="btn-primary" onclick="openTeamModal()">+ Add Team</button>
+        <button class="btn-primary" onclick="openPlayerEdit()">+ Add Player</button>
+        <button class="btn-secondary" onclick="openSessionModal()">+ Add Session</button>
+      </div>
 
-          Attack: ${p.attack}/5<br>
-          Defense: ${p.defense}/5<br>
-          Serve: ${p.serve}/5<br><br>
+      <div class="section-title">Player watchlist</div>
+      <div id="watchlist" class="list"></div>
+    </section>
 
-          <button onclick="editPlayer(${i})">Edit</button>
+    <section id="screen-teams" class="screen">
+      <div class="between">
+        <div class="section-title">Teams</div>
+        <button class="btn-primary btn-small" onclick="openTeamModal()">+ Add Team</button>
+      </div>
+      <div id="teams-list" class="list"></div>
+    </section>
+
+    <section id="screen-players" class="screen">
+      <div class="between">
+        <div class="section-title">Players</div>
+        <button class="btn-primary btn-small" onclick="openPlayerEdit()">+ Add Player</button>
+      </div>
+
+      <div class="toolbar" style="display:grid;grid-template-columns:1fr 160px;">
+        <input id="player-search" class="search" placeholder="Search players..." oninput="renderPlayers()" />
+        <select id="player-team-filter" class="select" onchange="renderPlayers()"></select>
+      </div>
+
+      <div class="a-z" id="az-bar"></div>
+      <div id="players-list" class="list"></div>
+    </section>
+
+    <section id="screen-sessions" class="screen">
+      <div class="between">
+        <div class="section-title">Sessions</div>
+        <button class="btn-primary btn-small" onclick="openSessionModal()">+ Add Session</button>
+      </div>
+      <div id="sessions-list" class="list"></div>
+    </section>
+
+    <section id="screen-more" class="screen">
+      <div class="section-title">More</div>
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:8px;">What’s next</div>
+        <div class="muted small">
+          Next step after this: player goals, timeline, roster import, weather cards, and AI voice updates.
         </div>
-      `).join("")}
-    `
-  }
+      </div>
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:8px;">Saved data</div>
+        <div class="muted small">
+          This version saves your teams, players, and sessions in local browser storage on this device. :contentReference[oaicite:1]{index=1}
+        </div>
+      </div>
+    </section>
+  </div>
 
-  if(tab==="teams"){
-    el.innerHTML = `<div class="card">Teams coming soon</div>`
-  }
+  <div class="bottom-nav">
+    <button id="nav-dashboard" class="nav-btn active" onclick="go('dashboard')">Dashboard</button>
+    <button id="nav-teams" class="nav-btn" onclick="go('teams')">Teams</button>
+    <button id="nav-players" class="nav-btn" onclick="go('players')">Players</button>
+    <button id="nav-sessions" class="nav-btn" onclick="go('sessions')">Sessions</button>
+  </div>
 
-  if(tab==="sessions"){
-    el.innerHTML = `<div class="card">Sessions coming soon</div>`
-  }
+  <div id="team-modal" class="modal">
+    <div class="sheet">
+      <div class="between">
+        <div class="sheet-title">Add team</div>
+        <button class="btn-secondary btn-small" onclick="closeModal('team-modal')">Close</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Team name</label>
+          <input id="team-name" class="input" placeholder="Women’s D" />
+        </div>
+        <div class="field">
+          <label>Team color</label>
+          <input id="team-color" class="input" type="color" value="#21c47b" />
+        </div>
+        <div class="field full">
+          <label>Team notes</label>
+          <textarea id="team-notes" class="textarea" placeholder="Anything important about this team..."></textarea>
+        </div>
+      </div>
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn-primary" onclick="saveTeam()">Save team</button>
+      </div>
+    </div>
+  </div>
 
-  if(tab==="more"){
-    el.innerHTML = `<div class="card">More features coming soon</div>`
-  }
-}
+  <div id="player-edit-modal" class="modal">
+    <div class="sheet">
+      <div class="between">
+        <div class="sheet-title" id="player-edit-title">Add player</div>
+        <button class="btn-secondary btn-small" onclick="closeModal('player-edit-modal')">Close</button>
+      </div>
 
-function addPlayer(){
-  let name = prompt("Player name")
+      <div class="form-grid">
+        <div class="field">
+          <label>Name</label>
+          <input id="p-name" class="input" placeholder="Player name" />
+        </div>
+        <div class="field">
+          <label>Team</label>
+          <select id="p-team" class="select"></select>
+        </div>
 
-  players.push({
-    name,
-    attack:3,
-    defense:3,
-    serve:3
-  })
+        <div class="field">
+          <label>Readiness</label>
+          <select id="p-ready" class="select">
+            <option value="fit">Fit</option>
+            <option value="sore">Sore</option>
+            <option value="limited">Limited</option>
+            <option value="injured">Injured</option>
+          </select>
+        </div>
 
-  show("players")
-}
+        <div class="field">
+          <label>Photo URL (optional)</label>
+          <input id="p-photo" class="input" placeholder="https://..." />
+        </div>
 
-function editPlayer(i){
-  let p = players[i]
+        <div class="field full">
+          <label>Strengths</label>
+          <textarea id="p-strengths" class="textarea" placeholder="Strong defender, good communication..."></textarea>
+        </div>
 
-  let attack = prompt("Attack (0-5)", p.attack)
-  let defense = prompt("Defense (0-5)", p.defense)
-  let serve = prompt("Serve (0-5)", p.serve)
+        <div class="field full">
+          <label>Weaknesses</label>
+          <textarea id="p-weaknesses" class="textarea" placeholder="Serve receive, timing on block..."></textarea>
+        </div>
 
-  players[i] = {
-    ...p,
-    attack,
-    defense,
-    serve
-  }
+        <div class="field full">
+          <label>Current focus</label>
+          <textarea id="p-focus" class="textarea" placeholder="Main coaching focus for next sessions..."></textarea>
+        </div>
 
-  show("players")
-}
+        <div class="field full">
+          <label>Coach notes</label>
+          <textarea id="p-notes" class="textarea" placeholder="General notes..."></textarea>
+        </div>
+      </div>
 
-// load players tab by default
-show("players")
-</script>
+      <div class="divider"></div>
+      <div class="sheet-title" style="font-size:16px;">Attributes (0–5)</div>
+      <div id="attrs-wrap" class="attrs"></div>
 
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn-primary" onclick="savePlayer()">Save player</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-view-modal" class="modal">
+    <div class="sheet">
+      <div class="between">
+        <div class="sheet-title">Player card</div>
+        <div class="row">
+          <button id="view-edit-btn" class="btn-primary btn-small">Edit</button>
+          <button class="btn-secondary btn-small" onclick="closeModal('player-view-modal')">Close</button>
+        </div>
+      </div>
+      <div id="player-view-body"></div>
+    </div>
+  </div>
+
+  <div id="session-modal" class="modal">
+    <div class="sheet">
+      <div class="between">
+        <div class="sheet-title">Add session</div>
+        <button class="btn-secondary btn-small" onclick="closeModal('session-modal')">Close</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Session title</label>
+          <input id="s-title" class="input" placeholder="Serve receive and sideout" />
+        </div>
+        <div class="field">
+          <label>Team</label>
+          <select id="s-team" class="select"></select>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input id="s-date" class="input" type="date" />
+        </div>
+        <div class="field">
+          <label>Duration (min)</label>
+          <input id="s-duration" class="input" type="number" value="90" />
+        </div>
+        <div class="field full">
+          <label>Objective</label>
+          <textarea id="s-objective" class="textarea" placeholder="Main goal of the session..."></textarea>
+        </div>
+      </div>
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn-primary" onclick="saveSession()">Save session</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "coach_app_advanced_v1";
+    const ATTRS = ["Attack","Defense","Serve","Setting","Passing","Blocking"];
+
+    const state = {
+      teams: [],
+      players: [],
+      sessions: [],
+      ui: {
+        currentScreen: "dashboard",
+        editingPlayerId: null,
+        letterFilter: ""
+      }
+    };
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        teams: state.teams,
+        players: state.players,
+        sessions: state.sessions
+      }));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        state.teams = parsed.teams || [];
+        state.players = parsed.players || [];
+        state.sessions = parsed.sessions || [];
+      } catch (e) {
+        console.error("Failed to load state", e);
+      }
+    }
+
+    function resetApp() {
+      if (!confirm("Reset all saved teams, players, and sessions?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state.teams = [];
+      state.players = [];
+      state.sessions = [];
+      renderAll();
+    }
+
+    function initials(name="") {
+      return name.split(" ").map(x => x[0]).join("").slice(0,2).toUpperCase() || "?";
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("open");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function go(screen) {
+      state.ui.currentScreen = screen;
+      document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+      document.getElementById("screen-" + screen).classList.add("active");
+      document.querySelectorAll(".nav-btn").forEach(el => el.classList.remove("active"));
+      const nav = document.getElementById("nav-" + screen);
+      if (nav) nav.classList.add("active");
+      renderAll();
+    }
+
+    function readinessClass(v) {
+      if (v === "fit") return "pill-fit";
+      if (v === "sore") return "pill-sore";
+      if (v === "limited") return "pill-limited";
+      return "pill-injured";
+    }
+
+    function teamName(teamId) {
+      return state.teams.find(t => t.id === teamId)?.name || "No team";
+    }
+
+    function teamColor(teamId) {
+      return state.teams.find(t => t.id === teamId)?.color || "#4c8dff";
+    }
+
+    function watchPlayers() {
+      return state.players.filter(p =>
+        p.readiness !== "fit" ||
+        averageAttr(p) <= 2.5
+      );
+    }
+
+    function averageAttr(player) {
+      const vals = ATTRS.map(a => Number(player.attributes?.[a] || 0));
+      const total = vals.reduce((a,b)=>a+b,0);
+      return vals.length ? total / vals.length : 0;
+    }
+
+    function renderDashboard() {
+      document.getElementById("stat-teams").textContent = state.teams.length;
+      document.getElementById("stat-players").textContent = state.players.length;
+      document.getElementById("stat-sessions").textContent = state.sessions.length;
+      document.getElementById("stat-watch").textContent = watchPlayers().length;
+
+      const watch = document.getElementById("watchlist");
+      const list = watchPlayers();
+      if (!list.length) {
+        watch.innerHTML = `<div class="empty">No players need attention right now.</div>`;
+        return;
+      }
+
+      watch.innerHTML = list.slice(0,5).map(p => `
+        <div class="player-row">
+          <div class="between">
+            <div class="row">
+              <div class="avatar">${p.photo ? `<img src="${p.photo}" alt="">` : initials(p.name)}</div>
+              <div>
+                <div style="font-weight:800">${p.name}</div>
+                <div class="small muted">${teamName(p.teamId)}</div>
+              </div>
+            </div>
+            <span class="chip ${readinessClass(p.readiness)}">${p.readiness}</span>
+          </div>
+          <div class="chips">
+            <span class="chip">Avg ${averageAttr(p).toFixed(1)}/5</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderTeams() {
+      const el = document.getElementById("teams-list");
+      if (!state.teams.length) {
+        el.innerHTML = `<div class="empty">No teams yet. Add your first team.</div>`;
+        return;
+      }
+
+      el.innerHTML = state.teams.map(team => {
+        const count = state.players.filter(p => p.teamId === team.id).length;
+        return `
+          <div class="team-tile">
+            <div class="between">
+              <div class="row">
+                <div class="team-color" style="background:${team.color}"></div>
+                <div>
+                  <div style="font-weight:800">${team.name}</div>
+                  <div class="small muted">${count} players</div>
+                </div>
+              </div>
+              <button class="btn-danger btn-small" onclick="deleteTeam('${team.id}')">Delete</button>
+            </div>
+            ${team.notes ? `<div class="small muted" style="margin-top:10px">${team.notes}</div>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function buildAzBar() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+      document.getElementById("az-bar").innerHTML =
+        `<button onclick="setLetterFilter('')">All</button>` +
+        letters.map(l => `<button onclick="setLetterFilter('${l}')">${l}</button>`).join("");
+    }
+
+    function setLetterFilter(letter) {
+      state.ui.letterFilter = letter;
+      renderPlayers();
+    }
+
+    function renderPlayers() {
+      buildTeamFilters();
+      const q = document.getElementById("player-search").value.trim().toLowerCase();
+      const teamFilter = document.getElementById("player-team-filter").value;
+      const letter = state.ui.letterFilter;
+
+      let list = [...state.players];
+
+      if (q) {
+        list = list.filter(p => p.name.toLowerCase().includes(q));
+      }
+      if (teamFilter) {
+        list = list.filter(p => p.teamId === teamFilter);
+      }
+      if (letter) {
+        list = list.filter(p => p.name.toUpperCase().startsWith(letter));
+      }
+
+      list.sort((a,b) => a.name.localeCompare(b.name));
+
+      const el = document.getElementById("players-list");
+      if (!list.length) {
+        el.innerHTML = `<div class="empty">No matching players.</div>`;
+        return;
+      }
+
+      el.innerHTML = list.map(p => `
+        <div class="player-row">
+          <div class="between">
+            <div class="row" style="min-width:0">
+              <div class="avatar">${p.photo ? `<img src="${p.photo}" alt="">` : initials(p.name)}</div>
+              <div style="min-width:0">
+                <div style="font-weight:800">${p.name}</div>
+                <div class="small muted">${teamName(p.teamId)}</div>
+              </div>
+            </div>
+            <span class="chip ${readinessClass(p.readiness)}">${p.readiness}</span>
+          </div>
+
+          <div class="chips">
+            <span class="chip">A ${p.attributes.Attack}</span>
+            <span class="chip">D ${p.attributes.Defense}</span>
+            <span class="chip">S ${p.attributes.Serve}</span>
+            <span class="chip">Se ${p.attributes.Setting}</span>
+            <span class="chip">P ${p.attributes.Passing}</span>
+            <span class="chip">B ${p.attributes.Blocking}</span>
+          </div>
+
+          <div class="toolbar" style="margin-top:10px">
+            <button class="btn-secondary btn-small" onclick="openPlayerView('${p.id}')">View</button>
+            <button class="btn-primary btn-small" onclick="openPlayerEdit('${p.id}')">Edit</button>
+            <button class="btn-danger btn-small" onclick="deletePlayer('${p.id}')">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderSessions() {
+      buildSessionTeamOptions();
+      const el = document.getElementById("sessions-list");
+      if (!state.sessions.length) {
+        el.innerHTML = `<div class="empty">No sessions yet.</div>`;
+        return;
+      }
+
+      const sorted = [...state.sessions].sort((a,b) => (a.date || "").localeCompare(b.date || ""));
+      el.innerHTML = sorted.map(s => `
+        <div class="session-row">
+          <div class="between">
+            <div>
+              <div style="font-weight:800">${s.title}</div>
+              <div class="small muted">${teamName(s.teamId)} · ${s.date || "No date"} · ${s.duration} min</div>
+            </div>
+            <button class="btn-danger btn-small" onclick="deleteSession('${s.id}')">Delete</button>
+          </div>
+          ${s.objective ? `<div class="small muted" style="margin-top:10px">${s.objective}</div>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderTeams();
+      renderPlayers();
+      renderSessions();
+      buildTeamFilters();
+      buildAzBar();
+    }
+
+    function buildTeamFilters() {
+      const sel = document.getElementById("player-team-filter");
+      const current = sel.value;
+      sel.innerHTML = `<option value="">All teams</option>` +
+        state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("");
+      if ([...sel.options].some(o => o.value === current)) sel.value = current;
+    }
+
+    function buildPlayerTeamOptions(selected="") {
+      const sel = document.getElementById("p-team");
+      sel.innerHTML = `<option value="">No team</option>` +
+        state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("");
+      sel.value = selected;
+    }
+
+    function buildSessionTeamOptions(selected="") {
+      const sel = document.getElementById("s-team");
+      sel.innerHTML = `<option value="">No team</option>` +
+        state.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("");
+      sel.value = selected;
+    }
+
+    function openTeamModal() {
+      document.getElementById("team-name").value = "";
+      document.getElementById("team-color").value = "#21c47b";
+      document.getElementById("team-notes").value = "";
+      openModal("team-modal");
+    }
+
+    function saveTeam() {
+      const name = document.getElementById("team-name").value.trim();
+      const color = document.getElementById("team-color").value;
+      const notes = document.getElementById("team-notes").value.trim();
+      if (!name) return alert("Enter a team name.");
+      state.teams.push({ id: uid(), name, color, notes });
+      saveState();
+      closeModal("team-modal");
+      renderAll();
+      go("teams");
+    }
+
+    function deleteTeam(id) {
+      if (!confirm("Delete this team? Players will stay but lose team assignment.")) return;
+      state.players = state.players.map(p => p.teamId === id ? { ...p, teamId: "" } : p);
+      state.teams = state.teams.filter(t => t.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function defaultAttrs() {
+      return {
+        Attack: 0,
+        Defense: 0,
+        Serve: 0,
+        Setting: 0,
+        Passing: 0,
+        Blocking: 0
+      };
+    }
+
+    function renderAttrEditor(values) {
+      const wrap = document.getElementById("attrs-wrap");
+      wrap.innerHTML = ATTRS.map(attr => `
+        <div class="attr">
+          <div class="attr-head">
+            <div style="font-weight:800">${attr}</div>
+            <div class="small muted"><span id="score-${attr}">${values[attr] || 0}</span>/5</div>
+          </div>
+          <div class="dots">
+            ${[0,1,2,3,4,5].map(v => `
+              <div class="dot ${(values[attr] || 0) >= v && v !== 0 ? "on" : ""}"
+                   onclick="setAttr('${attr}', ${v})"
+                   title="${v}">
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+      window._attrDraft = { ...values };
+    }
+
+    function setAttr(attr, value) {
+      window._attrDraft[attr] = value;
+      renderAttrEditor(window._attrDraft);
+    }
+
+    function openPlayerEdit(id=null) {
+      state.ui.editingPlayerId = id;
+      buildPlayerTeamOptions();
+
+      if (!id) {
+        document.getElementById("player-edit-title").textContent = "Add player";
+        document.getElementById("p-name").value = "";
+        document.getElementById("p-team").value = "";
+        document.getElementById("p-ready").value = "fit";
+        document.getElementById("p-photo").value = "";
+        document.getElementById("p-strengths").value = "";
+        document.getElementById("p-weaknesses").value = "";
+        document.getElementById("p-focus").value = "";
+        document.getElementById("p-notes").value = "";
+        renderAttrEditor(defaultAttrs());
+      } else {
+        const p = state.players.find(x => x.id === id);
+        document.getElementById("player-edit-title").textContent = "Edit player";
+        document.getElementById("p-name").value = p.name;
+        buildPlayerTeamOptions(p.teamId || "");
+        document.getElementById("p-ready").value = p.readiness || "fit";
+        document.getElementById("p-photo").value = p.photo || "";
+        document.getElementById("p-strengths").value = p.strengths || "";
+        document.getElementById("p-weaknesses").value = p.weaknesses || "";
+        document.getElementById("p-focus").value = p.focus || "";
+        document.getElementById("p-notes").value = p.notes || "";
+        renderAttrEditor(p.attributes || defaultAttrs());
+      }
+
+      openModal("player-edit-modal");
+    }
+
+    function savePlayer() {
+      const payload = {
+        name: document.getElementById("p-name").value.trim(),
+        teamId: document.getElementById("p-team").value,
+        readiness: document.getElementById("p-ready").value,
+        photo: document.getElementById("p-photo").value.trim(),
+        strengths: document.getElementById("p-strengths").value.trim(),
+        weaknesses: document.getElementById("p-weaknesses").value.trim(),
+        focus: document.getElementById("p-focus").value.trim(),
+        notes: document.getElementById("p-notes").value.trim(),
+        attributes: { ...(window._attrDraft || defaultAttrs()) }
+      };
+
+      if (!payload.name) return alert("Enter a player name.");
+
+      if (state.ui.editingPlayerId) {
+        const i = state.players.findIndex(x => x.id === state.ui.editingPlayerId);
+        state.players[i] = { ...state.players[i], ...payload };
+      } else {
+        state.players.push({
+          id: uid(),
+          ...payload
+        });
+      }
+
+      saveState();
+      closeModal("player-edit-modal");
+      renderAll();
+      go("players");
+    }
+
+    function deletePlayer(id) {
+      if (!confirm("Delete this player?")) return;
+      state.players = state.players.filter(p => p.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function openPlayerView(id) {
+      const p = state.players.find(x => x.id === id);
+      const body = document.getElementById("player-view-body");
+
+      document.getElementById("view-edit-btn").onclick = () => {
+        closeModal("player-view-modal");
+        openPlayerEdit(id);
+      };
+
+      body.innerHTML = `
+        <div class="card" style="padding:18px">
+          <div class="between">
+            <div class="row">
+              <div class="avatar" style="width:60px;height:60px;font-size:20px">
+                ${p.photo ? `<img src="${p.photo}" alt="">` : initials(p.name)}
+              </div>
+              <div>
+                <div style="font-size:22px;font-weight:900">${p.name}</div>
+                <div class="muted">${teamName(p.teamId)}</div>
+                <div class="chips">
+                  <span class="chip ${readinessClass(p.readiness)}">${p.readiness}</span>
+                  <span class="chip">Avg ${averageAttr(p).toFixed(1)}/5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="font-weight:800;margin-bottom:8px">Attributes</div>
+          <div class="chips">
+            ${ATTRS.map(a => `<span class="chip">${a}: ${p.attributes?.[a] ?? 0}</span>`).join("")}
+          </div>
+
+          ${p.strengths ? `
+            <div class="divider"></div>
+            <div style="font-weight:800;margin-bottom:6px">Strengths</div>
+            <div class="muted small">${p.strengths}</div>
+          ` : ""}
+
+          ${p.weaknesses ? `
+            <div class="divider"></div>
+            <div style="font-weight:800;margin-bottom:6px">Weaknesses</div>
+            <div class="muted small">${p.weaknesses}</div>
+          ` : ""}
+
+          ${p.focus ? `
+            <div class="divider"></div>
+            <div style="font-weight:800;margin-bottom:6px">Current focus</div>
+            <div class="muted small">${p.focus}</div>
+          ` : ""}
+
+          ${p.notes ? `
+            <div class="divider"></div>
+            <div style="font-weight:800;margin-bottom:6px">Coach notes</div>
+            <div class="muted small">${p.notes}</div>
+          ` : ""}
+        </div>
+      `;
+
+      openModal("player-view-modal");
+    }
+
+    function openSessionModal() {
+      buildSessionTeamOptions();
+      document.getElementById("s-title").value = "";
+      document.getElementById("s-team").value = "";
+      document.getElementById("s-date").value = "";
+      document.getElementById("s-duration").value = 90;
+      document.getElementById("s-objective").value = "";
+      openModal("session-modal");
+    }
+
+    function saveSession() {
+      const title = document.getElementById("s-title").value.trim();
+      if (!title) return alert("Enter a session title.");
+
+      state.sessions.push({
+        id: uid(),
+        title,
+        teamId: document.getElementById("s-team").value,
+        date: document.getElementById("s-date").value,
+        duration: Number(document.getElementById("s-duration").value || 0),
+        objective: document.getElementById("s-objective").value.trim()
+      });
+
+      saveState();
+      closeModal("session-modal");
+      renderAll();
+      go("sessions");
+    }
+
+    function deleteSession(id) {
+      if (!confirm("Delete this session?")) return;
+      state.sessions = state.sessions.filter(s => s.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    loadState();
+    renderAll();
+  </script>
 </body>
 </html>
