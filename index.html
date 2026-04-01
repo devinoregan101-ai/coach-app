@@ -372,7 +372,7 @@
       backdrop-filter:blur(14px);
       border-top:1px solid var(--line);
       display:grid;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(5,1fr);
       z-index:40;
     }
 
@@ -583,6 +583,7 @@
     <button id="nav-teams" class="nav-btn" onclick="go('teams')">Teams</button>
     <button id="nav-players" class="nav-btn" onclick="go('players')">Players</button>
     <button id="nav-sessions" class="nav-btn" onclick="go('sessions')">Sessions</button>
+    <button id="nav-more" class="nav-btn" onclick="go('more')">More</button>
   </div>
 
   <div id="team-modal" class="modal">
@@ -1064,12 +1065,6 @@
       if (wind >= 20) return "Fine for technique and sideout reps. Be careful with toss-dependent serving.";
       if (code <= 1) return "Great beach conditions. Good day for serving, attack timing, and game play.";
       return "Usable conditions. Focus on technical reps and controlled drills.";
-    }
-
-    function formatDay(dateStr, idx) {
-      const d = new Date(dateStr);
-      if (idx === 0) return "Today";
-      return d.toLocaleDateString(undefined, { weekday: "short" });
     }
 
     function renderWeather() {
