@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coach App</title>
+
+<style>
+body {
+  font-family: -apple-system, sans-serif;
+  margin:0;
+  background:#0f172a;
+  color:white;
+}
+
+h2 { padding:15px; }
+
+.nav {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  background:#1e293b;
+  padding:10px;
+}
+
+.tab { cursor:pointer; }
+
+.card {
+  background:#1e293b;
+  padding:15px;
+  margin:10px;
+  border-radius:12px;
+}
+
+button {
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#22c55e;
+  color:white;
+  font-weight:bold;
+}
+
+input {
+  padding:10px;
+  width:100%;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
+}
+</style>
+
+</head>
+<body>
+
+<h2>🏐 Coach Dashboard</h2>
+
+<div id="content"></div>
+
+<div class="nav">
+  <div class="tab" onclick="show('teams')">Teams</div>
+  <div class="tab" onclick="show('players')">Players</div>
+  <div class="tab" onclick="show('sessions')">Sessions</div>
+  <div class="tab" onclick="show('more')">More</div>
+</div>
+
+<script>
+let players = []
+
+function show(tab){
+  let el = document.getElementById("content")
+
+  if(tab==="players"){
+    el.innerHTML = `
+      <div class="card">
+        <button onclick="addPlayer()">+ Add Player</button>
+      </div>
+
+      ${players.map((p,i)=>`
+        <div class="card">
+          <b>${p.name}</b><br><br>
+
+          Attack: ${p.attack}/5<br>
+          Defense: ${p.defense}/5<br>
+          Serve: ${p.serve}/5<br><br>
+
+          <button onclick="editPlayer(${i})">Edit</button>
+        </div>
+      `).join("")}
+    `
+  }
+
+  if(tab==="teams"){
+    el.innerHTML = `<div class="card">Teams coming soon</div>`
+  }
+
+  if(tab==="sessions"){
+    el.innerHTML = `<div class="card">Sessions coming soon</div>`
+  }
+
+  if(tab==="more"){
+    el.innerHTML = `<div class="card">More features coming soon</div>`
+  }
+}
+
+function addPlayer(){
+  let name = prompt("Player name")
+
+  players.push({
+    name,
+    attack:3,
+    defense:3,
+    serve:3
+  })
+
+  show("players")
+}
+
+function editPlayer(i){
+  let p = players[i]
+
+  let attack = prompt("Attack (0-5)", p.attack)
+  let defense = prompt("Defense (0-5)", p.defense)
+  let serve = prompt("Serve (0-5)", p.serve)
+
+  players[i] = {
+    ...p,
+    attack,
+    defense,
+    serve
+  }
+
+  show("players")
+}
+
+// load players tab by default
+show("players")
+</script>
+
+</body>
+</html>
